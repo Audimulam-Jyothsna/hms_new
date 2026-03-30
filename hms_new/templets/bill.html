@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Invoice - {{ appt.patient.username }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { padding: 40px; background-color: #f8f9fa; }
+        .invoice-box { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 800px; margin: auto; }
+        .header-border { border-bottom: 3px solid #17a2b8; padding-bottom: 15px; margin-bottom: 30px; }
+        @media print {
+            body { background-color: white !important; padding: 0 !important; }
+            .invoice-box { box-shadow: none !important; padding: 0 !important; }
+            .no-print { display: none !important; }
+        }
+    </style>
+</head>
+<body {% if for_pdf %}onload="window.print()"{% endif %}>
+    <div class="container">
+        <div class="invoice-box">
+            <div class="header-border d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 style="color: #17a2b8; font-weight: bold;">Apollo Hospitals</h2>
+                    <p class="mb-0 text-muted">123 Health Avenue, Medical District</p>
+                    <p class="text-muted">Phone: +1 234 567 8900</p>
+                </div>
+                <div class="text-end">
+                    <h4 class="text-uppercase text-secondary">Medical Invoice</h4>
+                    <strong>Date:</strong> {{ appt.date_time.split('T')[0] if 'T' in appt.date_time else appt.date_time }}<br>
+                    <strong>Invoice #:</strong> INV-{{ '%04d' % appt.id }}
+                </div>
+            </div>
+            <div class="row mb-4">
+                <div class="col-sm-6">
+                    <h6 class="text-info text-uppercase">Billed To</h6>
+                    <strong>{{ appt.patient.username }}</strong><br>
+                    Patient ID: P-{{ '%04d' % appt.patient.id }}
+                </div>
+                <div class="col-sm-6 text-end">
+                    <h6 class="text-info text-uppercase">Consulting Doctor</h6>
+                    <strong>Dr. {{ appt.doctor.username }}</strong><br>
+                    <span class="badge bg-{{ 'success' if appt.payment_status == 'Paid' else 'warning text-dark' }} fs-6 mt-2">
+                        Status: {{ appt.payment_status }}
+                    </span>
+                </div>
+            </div>
+            <table class="table table-bordered mb-4">
+                <thead class="table-light">
+                    <tr>
+                        <th>Description</th>
+                        <th class="text-end">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Doctor Consultation Fee</td>
+                        <td class="text-end">${{ base_fee }}.00</td>
+                    </tr>
+                    <tr>
+                        <td>Medical Services Tax</td>
+                        <td class="text-end">${{ tax }}.00</td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td class="text-end"><strong>Total Balance</strong></td>
+                        <td class="text-end text-success"><strong>${{ total }}.00</strong></td>
+                    </tr>
+                </tfoot>
+            </table>
+            <div class="text-center mt-5 pt-3 border-top no-print">
+                {% if not for_pdf and appt.payment_status == 'Unpaid' and session.get('role') == 'patient' %}
+                    <form action="/pay/{{ appt.id }}" method="POST" class="d-inline">
+                        <button type="submit" class="btn btn-success me-2">Pay Now (${{ total }})</button>
+                    </form>
+                {% endif %}
+                <a href="/dashboard" class="btn btn-secondary me-2">Back to Dashboard</a>
+                <button class="btn btn-primary" onclick="window.print()">Print / Save as PDF</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

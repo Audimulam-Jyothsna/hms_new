@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container mt-5 mb-5">
+    <div class="row">
+        <!-- Doctor Info Column -->
+        <div class="col-md-4 text-center" data-aos="fade-right">
+            <img src="{{ doctor.img }}" alt="{{ name }}" class="img-fluid rounded-circle shadow mb-3" style="max-width: 250px; height: 250px; object-fit: cover;">
+            <h2 class="mb-1">{{ name }}</h2>
+            <h5 class="text-muted">{{ doctor.spec }}</h5>
+        </div>
+        
+        <!-- Bio & Booking Column -->
+        <div class="col-md-8" data-aos="fade-left">
+            <h3 class="mb-3">About the Doctor</h3>
+            <p class="lead">{{ doctor.bio }}</p>
+
+            <h4 class="mt-5 mb-3">Book an Appointment</h4>
+            {% if session.get('role') == 'patient' %}
+                <form action="/book" method="POST" class="p-4 border rounded bg-light shadow-sm">
+                    {% if doctor_user %}
+                        <input type="hidden" name="doctor_id" value="{{ doctor_user.id }}">
+                    {% endif %}
+                    <div class="mb-3">
+                        <label for="date_time" class="form-label">Preferred Date & Time</label>
+                        <input type="datetime-local" class="form-control" id="date_time" name="date_time" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="details" class="form-label">Reason for Visit / Symptoms</label>
+                        <textarea class="form-control" id="details" name="details" rows="3" placeholder="Briefly describe your symptoms or reason for visit..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg w-100">Confirm Appointment</button>
+                </form>
+            {% elif not session.get('user_id') %}
+                <div class="alert alert-warning shadow-sm">
+                    You must <a href="/login" class="alert-link">login</a> or <a href="/register" class="alert-link">register</a> as a patient to book an appointment.
+                </div>
+            {% else %}
+                <div class="alert alert-info shadow-sm">
+                    Please log in as a patient to book appointments.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

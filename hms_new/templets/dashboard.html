@@ -1,0 +1,326 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Dashboard - {{ role.capitalize() }} View</h2>
+<hr>
+
+<!-- NOTIFICATIONS SECTION -->
+{% if notifications %}
+<div class="alert alert-info shadow-sm mb-4">
+    <h5 class="alert-heading"><i class="fas fa-bell"></i> Notifications</h5>
+    <ul class="mb-0">
+        {% for n in notifications %}
+            {% if not n.is_read %}
+            <li class="mt-1">
+                <strong>{{ n.timestamp }}:</strong> {{ n.message }}
+                <a href="/notification/read/{{ n.id }}" class="badge bg-secondary text-decoration-none ms-2">Mark as read</a>
+            </li>
+            {% endif %}
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+<!-- PATIENT SECTION -->
+{% if role == 'patient' %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">Book Appointment</div>
+            <div class="card-body">
+                <form action="/book" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">Select Doctor</label>
+                        <select name="doctor_id" class="form-select" required>
+                            {% for doctor in doctors %}
+                                <option value="{{ doctor.id }}"> {{ doctor.username }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Date & Time</label>
+                        <input type="datetime-local" name="date_time" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Reason/Details</label>
+                        <textarea name="details" class="form-control" rows="3" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Book Now</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <h4>My Appointments</h4>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Doctor</th>
+                    <th>Date</th>
+                    <th>Details</th>
+                    <th>Status / Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for appt in appointments %}
+                <tr>
+                    <td>{{ appt.doctor.username }}</td>
+                    <td>{{ appt.date_time }}</td>
+                    <td>{{ appt.details }}</td>
+                    <td>
+                        <span class="badge bg-{{ 'success' if appt.status == 'Completed' else 'warning' }}">{{ appt.status }}</span>
+                        {% if appt.status == 'Completed' and appt.payment_status == 'Unpaid' %}
+                            <a href="/bill/{{ appt.id }}" class="btn btn-sm btn-info text-white ms-2">Pay Bill</a>
+                        {% elif appt.payment_status == 'Paid' %}
+                            <span class="badge bg-success ms-2">Paid</span>
+                            <a href="/bill/{{ appt.id }}" class="btn btn-sm btn-secondary text-white ms-2">View Receipt</a>
+                        {% endif %}
+                        {% if appt.prescription %}
+                            <a href="/prescription/pdf/{{ appt.id }}" class="btn btn-sm btn-outline-primary ms-2" target="_blank">Download Prescription</a>
+                        {% endif %}
+                        {% if appt.status == 'Completed' %}
+                            <button type="button" class="btn btn-sm btn-outline-info ms-2 mt-1" data-bs-toggle="modal" data-bs-target="#feedbackModal{{appt.id}}">Feedback</button>
+                            
+                            <!-- Feedback Modal -->
+                            <div class="modal fade" id="feedbackModal{{appt.id}}" tabindex="-1" aria-hidden="true">
+                              <div class="modal-dialog">
+                                <div class="modal-content">
+                                  <form action="/feedback/add" method="POST">
+                                      <div class="modal-header">
+                                        <h5 class="modal-title">Feedback for {{ appt.doctor.username }}</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                      </div>
+                                      <div class="modal-body">
+                                        <input type="hidden" name="doctor_id" value="{{ appt.doctor.id }}">
+                                        <div class="mb-3">
+                                            <label>Rating (1-5)</label>
+                                            <input type="number" name="rating" min="1" max="5" class="form-control" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label>Comments</label>
+                                            <textarea name="comments" class="form-control" rows="3"></textarea>
+                                        </div>
+                                      </div>
+                                      <div class="modal-footer">
+                                        <button type="submit" class="btn btn-primary">Submit Feedback</button>
+                                      </div>
+                                  </form>
+                                </div>
+                              </div>
+                            </div>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="4">No appointments found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        <h4 class="mt-4">My Medical Records & History</h4>
+        <table class="table table-sm table-bordered bg-white">
+            <thead class="table-light"><tr><th>Date</th><th>Doctor</th><th>Diagnosis</th><th>Treatment</th></tr></thead>
+            <tbody>
+                {% for record in medical_records %}
+                <tr><td>{{ record.date }}</td><td>{{ record.doctor.username }}</td><td>{{ record.diagnosis }}</td><td>{{ record.treatment }}</td></tr>
+                {% else %}<tr><td colspan="4">No medical records found.</td></tr>{% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ADMIN SECTION -->
+{% elif role == 'admin' %}
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-success text-white">Add User</div>
+            <div class="card-body">
+                <form action="/admin/user/add" method="POST">
+                    <div class="mb-2">
+                        <input type="text" name="username" class="form-control" placeholder="Username" required>
+                    </div>
+                    <div class="mb-2">
+                        <input type="password" name="password" class="form-control" placeholder="Password" required>
+                    </div>
+                    <div class="mb-2">
+                        <select name="role" class="form-select">
+                            <option value="patient">Patient</option>
+                            <option value="doctor">Doctor</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100">Add User</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">Manage Users</div>
+            <div class="card-body" style="max-height: 300px; overflow-y: auto;">
+                <table class="table table-sm">
+                    <thead><tr><th>ID</th><th>Username</th><th>Role</th><th>Action</th></tr></thead>
+                    <tbody>
+                        {% for u in users %}
+                        <tr>
+                            <td>{{ u.id }}</td>
+                            <td>{{ u.username }}</td>
+                            <td>{{ u.role }}</td>
+                            <td>
+                                {% if u.id != session.user_id %}
+                                <a href="/admin/user/delete/{{ u.id }}" class="btn btn-danger btn-sm" onclick="return confirm('Delete user?')">Delete</a>
+                                {% else %}
+                                <span class="badge bg-secondary">Current</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h4>Manage Appointments</h4>
+<table class="table table-bordered">
+    <thead class="table-dark">
+        <tr>
+            <th>ID</th>
+            <th>Patient</th>
+            <th>Doctor</th>
+            <th>Date (Reschedule)</th>
+            <th>Details</th>
+            <th>Status</th>
+            <th>Payment</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for appt in appointments %}
+        <tr>
+            <td>{{ appt.id }}</td>
+            <td>{{ appt.patient.username }}</td>
+            <td>{{ appt.doctor.username }}</td>
+            <td><input form="form-{{appt.id}}" type="datetime-local" name="date_time" value="{{ appt.date_time }}" class="form-control form-control-sm"></td>
+            <td>{{ appt.details }}</td>
+            <td>
+                <select form="form-{{appt.id}}" name="status" class="form-select form-select-sm">
+                    <option value="Scheduled" {% if appt.status == 'Scheduled' %}selected{% endif %}>Scheduled</option>
+                    <option value="In Progress" {% if appt.status == 'In Progress' %}selected{% endif %}>In Progress</option>
+                    <option value="Completed" {% if appt.status == 'Completed' %}selected{% endif %}>Completed</option>
+                    <option value="Cancelled" {% if appt.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+                </select>
+            </td>
+            <td>
+                <span class="badge bg-{{ 'success' if appt.payment_status == 'Paid' else 'warning' }}">{{ appt.payment_status }}</span>
+            </td>
+            <td>
+                <form id="form-{{appt.id}}" action="/admin/appointment/update/{{ appt.id }}" method="POST">
+                    <button type="submit" class="btn btn-primary btn-sm">Update</button>
+                </form>
+            </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="8">No appointments found.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div class="mt-4">
+    <h4>System Feedback Overview</h4>
+    <table class="table table-sm table-striped bg-white">
+        <thead><tr><th>Patient</th><th>Doctor</th><th>Rating</th><th>Comments</th></tr></thead>
+        <tbody>
+            {% for f in feedbacks %}
+            <tr><td>{{ f.patient.username }}</td><td>{{ f.doctor.username }}</td><td>{{ f.rating }} / 5</td><td>{{ f.comments }}</td></tr>
+            {% else %}
+            <tr><td colspan="4">No feedback available yet.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- DOCTOR SECTION -->
+{% elif role == 'doctor' %}
+    <h4>My Schedule</h4>
+    <table class="table table-bordered table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Patient</th>
+                <th>Date</th>
+                <th>Details</th>
+                <th>Prescription & Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for appt in appointments %}
+            <tr>
+                <td>{{ appt.id }}</td>
+                <td>{{ appt.patient.username }}</td>
+                <td>{{ appt.date_time }}</td>
+                <td>{{ appt.details }}</td>
+                <td>
+                    <form action="/doctor/appointment/update/{{ appt.id }}" method="POST">
+                        <textarea name="prescription" class="form-control form-control-sm mb-2" rows="2" placeholder="Write prescription here...">{{ appt.prescription or '' }}</textarea>
+                        <div class="d-flex">
+                            <select name="status" class="form-select form-select-sm me-2">
+                                <option value="Scheduled" {% if appt.status == 'Scheduled' %}selected{% endif %}>Scheduled</option>
+                                <option value="In Progress" {% if appt.status == 'In Progress' %}selected{% endif %}>In Progress</option>
+                                <option value="Completed" {% if appt.status == 'Completed' %}selected{% endif %}>Completed</option>
+                                <option value="Cancelled" {% if appt.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+                            </select>
+                            <button type="submit" class="btn btn-primary btn-sm">Update</button>
+                        </div>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6">No appointments found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="row mt-5">
+        <div class="col-md-6">
+            <h4>Add Medical Record</h4>
+            <div class="card card-body shadow-sm border-0">
+                <form action="/medical_record/add" method="POST">
+                    <div class="mb-2">
+                        <label>Select Patient</label>
+                        <select name="patient_id" class="form-select" required>
+                            {% set ns = namespace(printed=[]) %}
+                            {% for appt in appointments %}
+                                {% if appt.patient.id not in ns.printed %}
+                                    <option value="{{ appt.patient.id }}">{{ appt.patient.username }}</option>
+                                    {% set _ = ns.printed.append(appt.patient.id) %}
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-2"><label>Diagnosis</label><input type="text" name="diagnosis" class="form-control" required></div>
+                    <div class="mb-3"><label>Treatment</label><input type="text" name="treatment" class="form-control" required></div>
+                    <button type="submit" class="btn btn-success w-100">Save Patient Record</button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <h4>My Feedback Ratings</h4>
+            <ul class="list-group shadow-sm">
+                {% for f in feedbacks %}
+                <li class="list-group-item border-0 border-bottom">
+                    <strong>{{ f.rating }} / 5 stars</strong> - "{{ f.comments }}" <br><small class="text-muted">From: {{ f.patient.username }}</small>
+                </li>
+                {% else %}
+                <li class="list-group-item">No feedback received yet.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+{% endif %}
+
+{% endblock %}

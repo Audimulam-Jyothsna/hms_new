@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<!-- Hero Section -->
+<div class="hero-section text-center position-relative" data-aos="fade-down">
+    {% if not session.get('user_id') %}
+        <a href="/register" class="btn btn-primary position-absolute top-0 end-0 m-4">Register as Patient</a>
+    {% endif %}
+    <div class="container">
+        <h1 class="display-4">Welcome to Apollo Hospitals</h1>
+        <p class="lead mb-4">World-class healthcare services at your fingertips. Book appointments with top specialists today.</p>
+        {% if not session.get('user_id') %}
+            <a href="/login" class="btn btn-outline-light btn-lg">Login</a>
+        {% else %}
+            <a href="/dashboard" class="btn btn-success btn-lg">Go to Dashboard</a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Services Section -->
+<div class="row mb-5 text-center">
+    <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="100">
+        <div class="card service-card h-100">
+            <div class="card-body">
+                <h5 class="card-title">24/7 Emergency</h5>
+                <p class="card-text">Immediate care for critical health conditions with our dedicated emergency team.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="200">
+        <div class="card service-card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Modern Laboratory</h5>
+                <p class="card-text">Advanced diagnostic testing and pathology services for accurate results.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="300">
+        <div class="card service-card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Expert Doctors</h5>
+                <p class="card-text">Highly qualified specialists across various medical fields ready to help you.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Doctors Preview Section -->
+<h2 class="text-center mb-4" data-aos="fade-up">Meet Our Specialists</h2>
+<div class="row mb-5">
+    <div class="col-md-3 col-sm-6 mb-3" data-aos="zoom-in" data-aos-delay="100">
+        <div class="card doctor-card">
+            <img src="{{ url_for('static', filename='image/Rahul.jpeg') }}" class="card-img-top doctor-img" alt="Dr. Nangi Rahul">
+            <div class="card-body text-center">
+                <h6 class="card-title"><a href="{{ url_for('doctor_profile', name='Dr.Nangi Rahul') }}" class="text-decoration-none text-dark stretched-link">Dr.Nangi Rahul</a></h6>
+                <mid class="text-muted">Specialist in  Cardiologist</mid>  
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3" data-aos="zoom-in" data-aos-delay="200">
+        <div class="card doctor-card">
+            <img src="{{ url_for('static', filename='image/Nayan Pitlam.jpg') }}" class="card-img-top doctor-img" alt="Dr. Nayan Pitlam">
+            <div class="card-body text-center">
+                <h6 class="card-title"><a href="{{ url_for('doctor_profile', name='Dr. Nayan Pitlam') }}" class="text-decoration-none text-dark stretched-link">Dr. Nayan Pitlam</a></h6>
+                <mid class="text-muted">Specialist in  Pediatrician</mid>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3" data-aos="zoom-in" data-aos-delay="300">
+        <div class="card doctor-card">
+            <img src="{{ url_for('static', filename='image/Sushanth.avif') }}" class="card-img-top doctor-img" alt="Dr. Sushanth">
+            <div class="card-body text-center">
+                <h6 class="card-title"><a href="{{ url_for('doctor_profile', name='Dr. Sushanth') }}" class="text-decoration-none text-dark stretched-link">Dr. Sushanth</a></h6>
+                <mid class="text-muted">Specialist in  Neurologist</mid>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3" data-aos="zoom-in" data-aos-delay="400">
+        <div class="card doctor-card">
+            <img src="{{ url_for('static', filename='image/anitha desi.webp') }}" class="card-img-top doctor-img" alt="Dr. Anita Desai">
+            <div class="card-body text-center">
+                <h6 class="card-title"><a href="{{ url_for('doctor_profile', name='Dr. Anitha Desai') }}" class="text-decoration-none text-dark stretched-link">Dr. Anitha Desai</a></h6>
+                <mid class="text-muted">Specialist in  Gynecologist</mid>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3" data-aos="zoom-in" data-aos-delay="500">
+        <div class="card doctor-card">
+            <img src="{{ url_for('static', filename='image/Lohith Pattabhi.jpeg') }}" class="card-img-top doctor-img" alt="Dr. Lohith Pattabhi">
+            <div class="card-body text-center">
+                <h6 class="card-title"><a href="{{ url_for('doctor_profile', name='Dr. Lohith Pattabhi') }}" class="text-decoration-none text-dark stretched-link">Dr. Lohith Pattabhi</a></h6>
+                <mid class="text-muted">Specialist in  Dermatologist</mid>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

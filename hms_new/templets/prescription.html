@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Prescription - {{ appt.patient.username }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { padding: 40px; background-color: #f8f9fa; }
+        .prescription-box { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 800px; margin: auto; }
+        .header-border { border-bottom: 3px solid #0a4275; padding-bottom: 15px; margin-bottom: 30px; }
+        @media print {
+            body { background-color: white !important; padding: 0 !important; }
+            .prescription-box { box-shadow: none !important; padding: 0 !important; }
+            .no-print { display: none !important; }
+        }
+    </style>
+</head>
+<body onload="window.print()">
+    <div class="container">
+        <div class="prescription-box">
+            <div class="header-border d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 style="color: #0a4275; font-weight: bold;">Apollo Hospitals</h2>
+                    <p class="mb-0 text-muted">123 Health Avenue, Medical District</p>
+                    <p class="text-muted">Phone: +1 234 567 8900</p>
+                </div>
+                <div class="text-end">
+                    <h4 class="text-uppercase text-secondary">Medical Prescription</h4>
+                    <strong>Date:</strong> {{ appt.date_time.split('T')[0] if 'T' in appt.date_time else appt.date_time }}<br>
+                    <strong>Appt ID:</strong> #{{ appt.id }}
+                </div>
+            </div>
+            <div class="row mb-4">
+                <div class="col-sm-6">
+                    <h6 class="text-primary text-uppercase">Patient Details</h6>
+                    <strong>Name:</strong> {{ appt.patient.username }}<br>
+                    <strong>Patient ID:</strong> P-{{ '%04d' % appt.patient.id }}
+                </div>
+                <div class="col-sm-6 text-end">
+                    <h6 class="text-primary text-uppercase">Doctor Details</h6>
+                    <strong>Dr. {{ appt.doctor.username }}</strong><br>
+                    <span class="text-muted">Doctor ID: D-{{ '%04d' % appt.doctor.id }}</span>
+                </div>
+            </div>
+            <div class="mb-4">
+                <h6 class="text-primary text-uppercase border-bottom pb-2">Diagnosis / Symptoms</h6>
+                <p class="mt-2">{{ appt.details }}</p>
+            </div>
+            <div class="mb-5">
+                <h1 class="text-primary mb-3" style="font-family: serif; font-size: 3rem;">&#8471;</h1>
+                <div class="p-3 bg-light border rounded" style="min-height: 150px;">
+                    <p style="white-space: pre-line; font-size: 1.1rem;">{{ appt.prescription }}</p>
+                </div>
+            </div>
+            <div class="mt-5 pt-4 text-end">
+                <p class="mb-1">_________________________</p>
+                <p><strong>Signature:</strong> Dr. {{ appt.doctor.username }}</p>
+            </div>
+            <div class="text-center mt-5 pt-3 border-top no-print">
+                <button class="btn btn-primary" onclick="window.print()">Print / Save as PDF</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
